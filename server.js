@@ -22,7 +22,6 @@ var server = ws.createServer(function(conn){
     });
     conn.on("error", function (code, reason) {
         console.log("异常关闭");
-        usersNum();
     });
 
     conn.on("connect", function () {
