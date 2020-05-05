@@ -5,6 +5,6 @@ websocket+nodejs，简单实现了一个聊天室。
 
 <img alt="游戏截图加载中..." src="截图PC.JPG" />
 
-【贪食蛇 online 版】：基于html打包成一个apk，项目中可下载传。
+【移动端】：基于html打包成一个apk，项目中可下载传。
 
 <img alt="游戏截图加载中..." src="截图phone.JPG" />
