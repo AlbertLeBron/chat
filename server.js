@@ -13,6 +13,13 @@ var server = ws.createServer(function(conn){
                    server.connections.forEach(function(connection) {
                         connection.sendText(str);
                    });
+                   break;
+            case 'close':
+                   try {
+                        conn.close();
+                   } catch (error) {
+                        console.log('close异常', error)
+                   }
                   break;
         }
     })

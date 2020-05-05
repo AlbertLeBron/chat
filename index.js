@@ -1,4 +1,4 @@
-var nus = document.getElementById('nus'), nextus = document.getElementById('nextus'), m = document.getElementById('mwin'), u = document.getElementById('userList'), t, num = 0, state = 0, c = '', url = 'logic.php?', time, user = {}, webSocket;
+var nus = document.getElementById('nus'), nextus = document.getElementById('nextus'), m = document.getElementById('mwin'), u = document.getElementById('userList'), t, num = 0, state = 0, c = '', time, user = {}, webSocket;
 
 function openClient() {
     var name = document.getElementById('nameIpt').value;
@@ -51,6 +51,9 @@ function openClient() {
                         break;
             }
         }
+        window.onunload = () => {
+		  webSocket.send(JSON.stringify({sender: {id: id, name: name}, messageType: 'close'}));
+		}
     } else alert('请输入昵称');
 }
 
@@ -229,3 +232,4 @@ function excuFn(elementArray, paramArray, fn){
         eval(str);
     }
 }
+
