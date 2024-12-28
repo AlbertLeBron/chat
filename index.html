@@ -14,6 +14,7 @@
         <div id="login" class="active">
             <div class="img"><img src="img/hanhan.jpg"></div>
             <input id="nameIpt" type="text" placeholder="输入昵称" onkeypress="pressOpen(event)"/>
+            <span id="errorMessage"></span>
             <a id="nameSub" href="javascript:void(0)" onclick="openClient()">立即加入</a>
         </div>
         <div id="mwin">
@@ -22,14 +23,29 @@
                     <div id="avatar"></div><span id="comname">憨憨茶话会</span>
                 </div>
                 <div id="newuser">
-                    <span id="nus" num='0'>新聊友</span><span>
-                        <span id="nextus">申请列表</span>
+                    <span id="nus" num='0'>包厢列表</span><span>
+                        <span id="nextus" onclick="apply()">申请包厢</span>
                     </span>
                 </div>
                 <div id="userList">
                     
                 </div>
+                <em class="menuWrap" onclick="toggle()"><i class="menu"><span></span></i></em>
             </div>
+        </div>
+        <div id="cornfirmPop">
+            <div>
+                <p id="confirmText"></p>
+                <div id="customBox"></div>
+                <div id="confirmBtns">
+                    <span onclick="confirmCallback(false)">取消</span>
+                    <span onclick="confirmCallback(true)">确定</span>
+                </div>
+            </div>
+        </div>
+        <div id="pop">
+            <p>已掉线，重新加入？</p>
+            <a href="javascript:void(0)" onclick="location.reload();">确定</a>
         </div>
         <script type="text/javascript" src="index.js"></script>
     </body>

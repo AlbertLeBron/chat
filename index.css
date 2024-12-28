@@ -4,7 +4,7 @@ html{
 body{
     background: url(img/bg.jpg)no-repeat center center;
     background-size: cover;
-    font-family: '微软雅黑';
+    font-family: Helvetica, Arial, sans-serif;
     padding: 0;
     margin: 0;
     height: 100%;
@@ -24,16 +24,17 @@ body{
     border-radius: 3px;
     left:50%;
     top:50%;
-    margin-top: -285px;
-    margin-left:-500px;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
     overflow: hidden;
     -webkit-user-select:none;
     z-index: 1000;
     min-width: 1000px;
 }
+#mwin {
+    display: flex;
+}
 #login {
-    margin-top: -150px;
-    margin-left:-160px;
     height: 300px;
     width: 320px;
     display: none;
@@ -51,45 +52,61 @@ xmp {
     margin: 0;
     font: inherit;
     white-space: normal;
+    word-break: break-all;
+    -webkit-user-select: text;
 }           
 .bar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     height: 50px;
     border-bottom: 1px solid #dfdfdf;
-    line-height: 50px;
     background: url(img/users.png)no-repeat 12px center;
     background-size: 16px;
     padding: 0 0 0 36px;
-    box-sizing: border-box;
-    cursor: pointer;               
+    box-sizing: border-box;              
+}
+.barSum {
+    display: flex;
+    align-items: center;
+}
+.clientTitle {
+    margin-right: 20px;
 }
 .clientloc {
-    height: 20px;
-    margin: 15px 30px 0 200px;
     display: inline-block;
-    float: right;
-    padding-left: 18px;
-    line-height: 22px;
+    vertical-align: top;
+    padding-right: 78px;
     font-size: 13px;
     letter-spacing: 0.8px;
     color: #999;
     /*background: url(../img/loc_r.png)no-repeat left center/auto 95%;*/
 }
-.close{
-    float: right;
-    display: inline-block;
+.modeChange, .close{
+    display: inline-flex;
+    vertical-align: top;
+    align-items: center;
+    justify-content: center;
     height: 30px;
     width: 30px;
-    line-height: 30px;
     font-size: 20px;
-    color: #bbb;
-    text-align: center;               
+    color: #bbb; 
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+}
+.modeChange {
+    right: 30px;
+}
+.modeChange.active,
+.modeChange:hover {
+    background: #4cae4c;
+    color: #fff;
 }
 .close:hover{
     background: #F67168;
     color: #fff;
-}
-.content{
-    height:490px;
 }
 .dialogue{
     width: 760px;
@@ -97,18 +114,39 @@ xmp {
     display: inline-block;
     vertical-align: top;
 }
-.box{
-    height: 315px;              
-    overflow: auto;
+.boxWrap {
+    height: 315px;
     position: relative;
+}
+.box{
+    height: 100%;              
+    overflow: auto;
 }
 .words{
     padding: 0 12px;
     box-sizing: border-box;
     width: 100%;
 }
-#quick{
-    height: 35px;
+.toBottom {
+    display: none;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    color: #59dd59;
+    font-size: 13px;
+    padding: 5px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, .5);
+    cursor: pointer;
+}
+.toBottom.active {
+    display: block;
+}
+.quick{
+    display: flex;
+    min-height: 35px;
     border-top: 1px solid #dfdfdf;
     background: #E8E7E7;
     padding: 0 10px;
@@ -116,11 +154,18 @@ xmp {
     font-size: 20px;
     color: #777;
 }
-#quick>span{
+.quick>span{
     margin-right: 10px;
-    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    height: 35px;
 }
-#quick>a{
+#emoji{
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+}
+#emoji>a{
     display:inline-block;
     text-align: center;
     vertical-align: middle;
@@ -128,10 +173,10 @@ xmp {
     height:35px;
     width: 35px;
 }
-#quick>a:hover,#wuppic:hover{
+#emoji>a:hover,#wuppic:hover{
     background: #ccc;
 }
-#quick>a>img{
+#emoji>a>img{
     margin-top: 15%;
     width: 70%;
 }
@@ -233,7 +278,7 @@ xmp {
     margin: 20px 0 23px;
     position: relative;
 }
-.kf>b{
+.kf>span>b{
     position: absolute;
     top: 42px;
     left: 0;
@@ -246,9 +291,16 @@ xmp {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.kf>i>img {
+.kf>span>i {
+    display: inline-block;
     width: 40px;
+    height: 40px;
     margin-right: 20px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+.kf>span>i>img {
+    width: 40px;
     vertical-align: top;
     border-radius: 50%;
 }
@@ -261,19 +313,26 @@ xmp {
     background: #73C7FB;
     margin-left: 20px;
     vertical-align: top;
-    /* line-height: 52px; */
     line-height: 58px;
+    overflow: hidden;
 }
 .user>i>img {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
 }
-.user>span>img{
+.user>div>span>img{
     max-width: 100%;
     display: block;
 }
-.kf>span {
+.kf {
+    display: flex;
+}
+.kf>div {
+    flex: 1;
+    width: 0;
+    min-width: 0;
+}
+.kf>div>span {
     padding: 12px;
     background: #E0E0E0;
     border-radius: 20px;
@@ -284,7 +343,7 @@ xmp {
     display: inline-block;
     box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.2);
 }
-.kf>span:before {
+.kf>div>span:before {
     content: '';
     width: 0;
     height: 0;
@@ -296,8 +355,14 @@ xmp {
 }
 .user{
     text-align: right;
+    display: flex;
 }
-.user>span {
+.user>div {
+    flex: 1;
+    width: 0;
+    min-width: 0;
+}
+.user>div>span {
     padding: 12px;
     background: #009BDB;
     color: #fff;
@@ -311,7 +376,7 @@ xmp {
     text-align: left;
     box-shadow: 0px 1px 2px 1px rgba(1, 0, 68, 0.53);
 }
-.user>span:after {
+.user>div>span:after {
     content: '';
     width: 0;
     height: 0;
@@ -327,6 +392,16 @@ xmp {
     font-size: 12px;
     margin: 20px 0;
     color: #999;
+}
+.tip {
+    text-align: center;
+    font-size: 14px;
+    font-style: italic;
+    word-break: break-all;
+    margin: 20px 0;
+}
+.emoj {
+    height: 40px;
 }
 .box::-webkit-scrollbar,
 #userList::-webkit-scrollbar
@@ -353,7 +428,6 @@ xmp {
     height: 110px;
     color: red;
     width: 100px;
-    line-height: 120px;
     font-size: 12px;
     text-align: center;
     -webkit-transform: scale(0, 0);
@@ -363,6 +437,11 @@ xmp {
     opacity: 0;
     -webkit-transition: opacity 0.2s, -webkit-transform 0.3s 0.2s;
     transition: opacity 0.2s, transform 0.3s 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 10px;
+    box-sizing: border-box;
 }
 .warn[active]{
     -webkit-transform: scale(1, 1);
@@ -372,18 +451,16 @@ xmp {
     opacity: 1;
 }
 #sumInfo{
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: column;
     width: 240px;
-    vertical-align: top;
-    float: left;
 }
 .userInfo{
-    vertical-align: top;
-    float: left;
     display: none;
 }
 .userInfo.active{
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: column;
 }
 #me{
     height: 90px;
@@ -394,7 +471,9 @@ xmp {
     position: relative;
 }
 #userList{
-    height: 420px;
+    flex: 1;
+    min-height: 0;
+    height: 0;
     background: #363E47;
     box-shadow: inset rgba(255,255,255,0.45) 0px 0px 1px;
     overflow: auto;
@@ -541,6 +620,10 @@ xmp {
     margin-top: 35px;
     text-indent: 1em;
 }
+#errorMessage {
+    color: red;
+    font-size: 13px;
+}
 #login a {
     color: #fff;
     background-color: #30D130;
@@ -549,53 +632,241 @@ xmp {
     border-radius: 4px;
     outline: none;
     cursor: pointer;
-    vertical-align: middle;
     height: 40px;
     text-decoration: none;
     margin-top: 30px;
-    display: block;
-    line-height: 40px;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-#login a:hover {
+#login a[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+}
+#login a:hover:not([disabled]) {
     background: #24b024;
 }
-@media screen and (max-width: 1000px) {
+#cornfirmPop, #pop {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background: rgba(255, 255, 255, .8);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    z-index: 9999;
+}
+#cornfirmPop {
+    background: none;
+    z-index: 9998;
+}
+#cornfirmPop > div {
+    min-height: 100px;
+    width: 300px;
+    max-width: calc(100% - 20px);
+    background: #fff;
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 15px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+#confirmText {
+    margin-top: 0;
+    flex: 1;
+    min-height: 0;
+    height: 0;
+    word-break: break-all;
+}
+#confirmBtns{
+    display: flex;
+    justify-content: flex-end;
+} 
+#confirmBtns > span{
+    display: inline-block;
+    padding: 5px 10px;
+    border: 1px solid #eee;
+    vertical-align: top;
+    cursor: pointer;
+    transition: all .3s;
+    -webkit-transition: all .3s;
+}
+#confirmBtns > span + span{
+    background: #186fe1;
+    color: #fff;
+    margin-left: 10px;
+}
+#confirmBtns > span:first-child:hover {
+    background: #eee;
+}
+#confirmBtns > span + span:hover {
+    background: #0d56b6;
+}
+#cornfirmPop.active, #pop.active {
+    display: flex;
+}
+.menuWrap{
+    position: absolute;
+    top: 25px;
+    right: -40px;
+    width: 30px;
+    height: 30px;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+    border: 1px solid #ddd;
+    transition: all .2s;
+    text-align: center;
+    display: none;
+    z-index: 100;
+    border-radius: 4px;
+    cursor: pointer;
+    background: rgba(255,255,255,.9);
+}
+.menu{
+    display: inline-block;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+}
+
+.menu span{
+    transition: opacity .3s;
+    -webkit-transition: opacity .3s;
+}
+
+#sumInfo.open .menu span{
+    opacity: 0;
+}
+
+.menu::before{
+    transform-origin: 10% 190%;
+    -webkit-transform-origin: 10% 190%;
+}
+
+#sumInfo.open .menu::before{
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);   
+}
+
+.menu::after{
+    transform-origin: 10% -60%;
+    -webkit-transform-origin: 10% -60%;
+}
+
+#sumInfo.open .menu::after{
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.menu::after, .menu::before {
+    content: ' ';
+    transition: transform .3s;
+    -webkit-transition: -webkit-transform .3s;
+}
+
+.menu span, .menu::before, .menu::after {
+    height: 3px;
+    width: 24px;
+    display: block;
+    background-color: #42b983;
+    transform: rotate(0);
+    border: none;
+    position: static;
+}
+
+.menu span, .menu::after {
+    margin-top: 5px;
+}
+@media screen and (max-width: 1000px), screen and (max-height: 562px) {
     #login, #mwin{
         position: relative;
         height: 100%;
         width: 100%;
         min-width: 100%;
-        margin-left: 0;
-        margin-top: 0;
         top: 0;
         left: 0;
+        transform: translate(0, 0);
+        -webkit-transform: translate(0, 0);
     }
     #mwin{
         display: flex;
         flex-direction: column;
     }
     #sumInfo {
-        display: block;
-        float: none;
-        width: 100%;
+        position: absolute;
+        height: 100%;
+        box-shadow: 0 0 6px 1px rgba(0,0,0,0.3);
+        z-index: 1;
+        width: 120px;
+        max-width: calc(100% - 40px);
+        transition: all .2s;
+        -webkit-transition: all .2s;
+        transform: translateX(-100%);
+        -webkit-transform: translateX(-100%);
+    }
+    #sumInfo.open {
+        transform: translateX(0);
+        -webkit-transform: translateX(0);
     }
     #me {
-        height: auto;
-        padding: 10px 12px;
+        display: none;
+    }
+    #newuser {
+        height: initial;
+        box-shadow: none;
+    }
+    #newuser > span{
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    #newuser > span:first-child {
+        height: 50px;
+        line-height: 50px;
+    }
+    #newuser > span:last-child{
+        height: 60px;
+        position: absolute;
+        bottom: 0;
+        line-height: initial;
+        padding: 15px 0;
+    }
+    #userList {
+        padding-bottom: 60px;
+        background-color: rgba(54, 62, 71, .9);
+    }
+    #userList > div {
+        display: flex;
+        align-items: center;
+        height: 35px;
+        line-height: initial;
+        padding-left: 35px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 13px;
+    }
+    #nextus::after {
+        left: 50%;
+        top: 50%;
+        margin-left: initial;
+        transform: translate(-50%, -50%);
+        -webkit-transform: translate(-50%, -50%);
+    }
+    #nus::after {
+        margin-top: 0;
     }
     .bar {
-        position: absolute;
-        top: 5px;
-        color: #fff;
-        right: 0;
-        border-bottom: none;
         background-size: 10px;
+        background-position: 52px center;
         font-size: 13px;
-        padding-left: 26px;
-    }
-    #newuser, #userList {
-        display: none;
+        padding: 0 16px 0 66px;
     }
     #avatar{
         height: 40px;
@@ -605,17 +876,31 @@ xmp {
         font-size: 16px;
         vertical-align: middle;
     }
+    .barSum > span + span{
+        margin-left: 10px;
+    }
     .clientloc {
         margin: 0;
-        float: none;
-        color: #fff;
+        padding: 0;
     }
-    .close {
-        margin-top: 10px;
-        color: #fff;
+    .modeChange {
+        font-size: 12px;
+    }
+    .modeChange, .close {
+        position: static;
+        border: 1px solid #bbb;
+        height: 25px;
+        width: 25px;
+        border-radius: 4px;
+    }
+    .close:hover {
+        background: initial;
+        color: #bbb;
     }
     .content{
-        height: 100%;
+        flex: 1;
+        height: 0;
+        min-height: 0;
     }
     .userInfo {
         flex: 1;
@@ -626,14 +911,23 @@ xmp {
         display: flex;
         flex-direction: column;
     }
-    .box {
-        height: auto;
+    .boxWrap {
         flex: 1;
     }
     .oper{
-        height: 140px;
+        height: initial;
+        display: flex;
+        padding: 5px 10px;
+        align-items: center;
+    }
+    .tool {
+        padding-right: 0;
     }
     .ipt{
-        height: 100px;
+        height: 50px;
+        box-shadow: 0 0 1px 0 rgb(0, 0, 0);
+    }
+    .menuWrap {
+        display: block;
     }
 }
