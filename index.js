@@ -15,7 +15,7 @@ function openClient() {
         logginError.innerText = '';
         nameSub.setAttribute('disabled', '');
 
-        webSocket = new WebSocket('ws://119.3.144.14:8870');  
+        webSocket = new WebSocket('ws://localhost:8870');  
 
         webSocket.onerror = function(event) {  
             logginError.innerText = '系统忙碌中，请稍等片刻...';
