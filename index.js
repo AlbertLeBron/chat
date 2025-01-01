@@ -5,7 +5,7 @@ var logginError = document.getElementById('errorMessage'),
     sumInfo = document.getElementById('sumInfo'),
     nextus = document.getElementById('nextus'), 
     m = document.getElementById('mwin'), 
-    u = document.getElementById('userList'), t, num = 0, state = 0, c, rooms = [], url = 'logic.php?', time, user = {}, webSocket,
+    u = document.getElementById('userList'), times = [], c, rooms = [], myRooms = [], url = 'logic.php?', user = {}, webSocket,
     confirmExcution,
     tolerance = 1; // 容差值，可以根据需要调整;
 
@@ -15,7 +15,7 @@ function openClient() {
         logginError.innerText = '';
         nameSub.setAttribute('disabled', '');
 
-        webSocket = new WebSocket('ws://localhost:8870');  
+        webSocket = new WebSocket('ws://119.3.144.14:8870');  
 
         webSocket.onerror = function(event) {  
             logginError.innerText = '系统忙碌中，请稍等片刻...';
@@ -23,8 +23,10 @@ function openClient() {
             addClass(pop, 'active');
         };
         webSocket.onopen = function(event) {
-            var id = 'u'+new Date().getTime()+'_'+guid();                
-            webSocket.send(JSON.stringify({sender: {id: id, name: name}, reciever: {id: 'group', name: '群聊'}, messageType: 'login'}));
+            var id = 'u'+new Date().getTime()+'_'+guid(),
+                bgColor = getRandomRGBColor(),
+                color = getContrastingColor(bgColor);                
+            webSocket.send(JSON.stringify({sender: {id: id, name: name, bgColor, color}, reciever: {id: 'group', name: '群聊'}, messageType: 'login'}));
         };
         webSocket.onclose = function(event){
             console.log("已掉线，请尝试重新登录");
@@ -33,7 +35,11 @@ function openClient() {
         }
         webSocket.onmessage = function(event){
             let message = JSON.parse(event.data),
-                node = message && message.reciever && message.reciever.id ? document.getElementById('v'+message.reciever.id) : null;
+                node = message && message.reciever && message.reciever.id ? document.getElementById('v'+message.reciever.id) : null,
+                listNode = message && message.reciever && message.reciever.id ? document.getElementById(message.reciever.id) : null,
+                cornfirmPopDom = document.getElementById('cornfirmPop'),
+                errorDom = document.getElementById('confirmError'),
+                applyId = message && message.message && message.message.applyId;
             
             switch(message.messageType){
                 case 'login': 
@@ -73,42 +79,125 @@ function openClient() {
                                     b.scrollTop = b.scrollHeight - b.clientHeight;
                                 } else if(!hasClass(tb, 'active')) addClass(tb, 'active');
                             }
+
+                            if(!hasClass(node, 'active') && listNode && !hasClass(listNode, 'newmsg')) addClass(listNode, 'newmsg');
                         }
                         
                         break;
                 case 'talk':
-                        var now = new Date(),
-                            w = node.getElementsByClassName('words')[0],
-                            b = node.getElementsByClassName('box')[0],
-                            tb = node.getElementsByClassName('toBottom')[0];
-                        if((now.getTime()-time.getTime())/(1000*60)>1 || w.children.length <= 1){
+                        if(node) {
+                            var now = new Date(),
+                                w = node.getElementsByClassName('words')[0],
+                                b = node.getElementsByClassName('box')[0],
+                                tb = node.getElementsByClassName('toBottom')[0];
+                            if((now.getTime()-times[message.reciever.id].time.getTime())/(1000*60)>1 || w.children.length <= 1){
+                                newItem = document.createElement('div');
+                                newItem.className = 'time';
+                                times[message.reciever.id].time = now;
+                                newItem.innerHTML = formatDate(times[message.reciever.id].time);
+                                w.appendChild(newItem);
+                            }
+                            times[message.reciever.id].time = now;
+                            var newItem;
+                            if(message.sender.id === user.id) break;
                             newItem = document.createElement('div');
-                            newItem.className = 'time';
-                            time = now;
-                            newItem.innerHTML = formatDate(time);
+                            newItem.className = 'kf';
+                            newItem.innerHTML = '<span><i style="background:'+message.sender.bgColor+';color:'+message.sender.color+'">'+message.sender.name[0]+'</i><b title="'+message.sender.name+'">'+message.sender.name+'</b></span><div><span>'+showSpe(message.message)+'</span></div>';
+                            const isAtBottom = Math.abs(b.scrollTop - (b.scrollHeight - b.clientHeight)) <= tolerance;
                             w.appendChild(newItem);
+                            if(isAtBottom) {
+                                b.scrollTop = b.scrollHeight - b.clientHeight;
+                            } else if(!hasClass(tb, 'active')) addClass(tb, 'active');
+
+                            if(!hasClass(node, 'active') && listNode && !hasClass(listNode, 'newmsg')) addClass(listNode, 'newmsg');
                         }
-                        time = now;
-                        var newItem;
-                        if(message.sender.id === user.id) break;
-                        newItem = document.createElement('div');
-                        newItem.className = 'kf';
-                        newItem.innerHTML = '<span><i><img title="'+message.sender.name+'" src="../img/user.png"/></i><b title="'+message.sender.name+'">'+message.sender.name+'</b></span><div><span>'+showSpe(message.message)+'</span></div>';
-                        const isAtBottom = Math.abs(b.scrollTop - (b.scrollHeight - b.clientHeight)) <= tolerance;
-                        w.appendChild(newItem);
-                        if(isAtBottom) {
-                            b.scrollTop = b.scrollHeight - b.clientHeight;
-                        } else if(!hasClass(tb, 'active')) addClass(tb, 'active');
                         break;
                 case 'users': 
-                        Object.keys(message.message).forEach(room => {
-                            let dom = document.getElementById('v'+room);
+                        message.message.forEach(room => {
+                            let dom = document.getElementById('v'+room.id);
                             if(dom) 
-                                dom.getElementsByClassName('clientloc')[0].innerText = '当前'+message.message[room]+'人在线';
+                                dom.getElementsByClassName('clientloc')[0].innerText = '当前'+room.num+'人在线';
                         });
                         break;
                 case 'ping':
                         webSocket.send(JSON.stringify({sender: {id: user.id, name: user.name}, messageType: 'pong'}));
+                        break;
+                case 'applyRoom':
+                        if(message.message.error) {
+                            if(cornfirmPopDom.getAttribute('popid') === applyId) {
+                                cornfirmPopDom.removeAttribute('disabled');
+                                cornfirmPopDom.removeAttribute('waitting');
+                                errorDom.innerText = '* '+message.message.error;
+                            } else {
+                                showTipPop({status: 'error', text: message.message.error});
+                            }
+                        } else{
+                            let v = rooms.find(room => room.id === message.reciever.id);
+                            if(v) newChatWin(v, {switchRecords: false});
+                            if(cornfirmPopDom.getAttribute('popid') === applyId) {
+                                closeConfirm();
+                                if(v) selectRoom(v.id);
+                            }
+                            showTipPop({status: 'success', text: `包厢${message.reciever.name}申请成功！`});
+                            refreshMyRooms(message.setUp.myRooms);
+                        }
+                        break;
+                case 'rooms':
+                        let orooms = rooms;
+                        rooms = message.message;
+                        nus.setAttribute('num', rooms.length);
+                        let lostRooms = orooms.filter(or => !rooms.find(r => r.id === or.id));
+                        if(lostRooms.length) {
+                            showTipPop({status: 'warning', text: `包厢“${lostRooms.map(lr => lr.name).join('、')}”已解散！`});
+                        }
+                        if(lostRooms.find(lr => lr.id === c.id)) {
+                            let oDom = document.getElementById('v'+c.id);
+                            oDom.parentNode.removeChild(oDom);
+                            c = orooms.find(or => rooms.find(r => r.id === or.id));
+                            document.getElementById(c.id).click();
+                        }
+                        u.innerHTML = rooms.map(room => `<div id="${room.id}" class="${room.id === c.id ? 'active' : ''}${myRooms.find(id => id === room.id) ? ' registered' : ''}" onclick="selectRoom('${room.id}')">${room.name}</div>`).join('');
+                        break;
+                case 'checkRoom':
+                        if(message.message.error) {
+                            if(cornfirmPopDom.getAttribute('popid') === applyId) {
+                                cornfirmPopDom.removeAttribute('disabled');
+                                cornfirmPopDom.removeAttribute('waitting');
+                                errorDom.innerText = '* '+message.message.error;
+                            } else {
+                                showTipPop({status: 'error', text: message.message.error});
+                            }
+                        } else{
+                            refreshMyRooms(message.setUp.myRooms);
+                            let v = rooms.find(r => r.id === message.reciever.id),
+                                cDom = document.getElementById(v.id);
+                            if(cornfirmPopDom.getAttribute('popid') === applyId) {
+                                closeConfirm();
+                                let dom = document.getElementById(message.reciever.id),
+                                    oDom = document.getElementById(c.id),
+                                    ovDom = document.getElementById('v'+c.id);
+                                if(cDom) {
+                                    if(oDom) removeClass(oDom, 'active');
+                                    if(ovDom) removeClass(ovDom, 'active');
+                                    addClass(cDom, 'active');
+                                    removeClass(dom, 'newmsg');
+                                    c = v;
+                                    newChatWin(v, {switchRecords: message.setUp.switchRecords}, true);
+                                }
+                            }
+                            if(cDom) addClass(cDom, 'registered');
+                            if(v) myRooms.push(v);
+                        }
+                        break;
+                case 'closeRoom':
+                        if(message.message.error) {
+                            showTipPop({status: 'error', text: message.message.error});
+                        }
+                        let closeDom = node && node.getElementsByClassName('close')[0];
+                        if(closeDom) closeDom.removeAttribute('disabled');
+                        break;
+                case 'myRooms':
+                        refreshMyRooms(message.message);
                         break;
             }
         }
@@ -131,27 +220,24 @@ function newRoom(data){
         return;
     }
     rooms = data.setUp.rooms;
-    data.setUp.myRooms.forEach(roomId => {
-        let room = rooms.find(room => room.id === roomId);
-        if(room) 
-            room.hasAuthority = true;
-    });
+    nus.setAttribute('num', rooms.length);
+    myRooms = data.setUp.myRooms;
+    refreshMyRooms(myRooms);
     let v = rooms.find(room => room.id === data.roomId);
 
     if(c){
-        removeClass(document.getElementById(c.id), 'active');
         removeClass(document.getElementById('v'+c.id), 'active');
     }
     c = v;
 
-    u.innerHTML = rooms.map(room => `<div id="${room.id}" class="${room.id === v.id ? 'active' : ''}" onclick="selectRoom('${room.id}')">${room.name}</div>`);
+    u.innerHTML = rooms.map(room => `<div id="${room.id}" class="${room.id === v.id ? 'active' : ''}${myRooms.find(id => id === room.id) ? ' registered' : ''}" onclick="selectRoom('${room.id}')">${room.name}</div>`).join('');
 
-    newChatWin(v, {switchRecords: data.setUp.switchRecords});
+    newChatWin(v, {switchRecords: data.setUp.switchRecords}, true);
 }
-function newChatWin(v, setUp) {
+function newChatWin(v, setUp, isActive) {
     var node = document.createElement('div');
     node.id = 'v'+v.id;
-    node.className = 'userInfo active';
+    node.className = 'userInfo' + (isActive ? ' active' : '');
 
     node.innerHTML = `<div class="bar"><span class="clientTitle">${v.name}</span><div class="barSum"><span class="clientloc"></span><span class="modeChange${setUp.switchRecords ? ' active' : ''}">◐</span><span class="close">×</span></div></div>
                         <div class="content">
@@ -188,8 +274,9 @@ function newChatWin(v, setUp) {
     var newItem;
     newItem = document.createElement('div');
     newItem.className = 'time';
-    time = new Date();
-    newItem.innerHTML = formatDate(time);
+    if(!times[v.id]) times[v.id] = {};
+    times[v.id].time = new Date();
+    newItem.innerHTML = formatDate(times[v.id].time);
     w.appendChild(newItem);
 
     newItem = document.createElement('div');
@@ -225,28 +312,28 @@ function newChatWin(v, setUp) {
         if(a.value.trim() == ''){
             warn.innerText = '空的发不了哦';
             warn.setAttribute('active', 0);
-            clearTimeout(t);
-            t = setTimeout(function(){warn.removeAttribute('active');}, 1500);
+            clearTimeout(times[v.id].t);
+            times[v.id].t = setTimeout(function(){warn.removeAttribute('active');}, 1500);
             return;
         }else{
             warn.removeAttribute('active');
         }
         var now = new Date();
-        if((now.getTime()-time.getTime())/(1000*60)>1 || w.children.length <= 1){
+        if((now.getTime()-times[v.id].time.getTime())/(1000*60)>1 || w.children.length <= 1){
             newItem = document.createElement('div');
             newItem.className = 'time';
-            time = now;
-            newItem.innerHTML = formatDate(time);
+            times[v.id].time = now;
+            newItem.innerHTML = formatDate(times[v.id].time);
             w.appendChild(newItem);
         }
-        time = now;
+        times[v.id].time = now;
         newItem = document.createElement('div');
         newItem.className = 'user';
         val = a.value;
-        newItem.innerHTML = '<div><span>'+showSpe(val)+'</span></div><i><img src="../img/user.png"/></i>';
+        newItem.innerHTML = '<div><span>'+showSpe(val)+'</span></div><i style="background:'+user.bgColor+';color:'+user.color+'">'+user.name[0]+'</i>';
         w.appendChild(newItem);
         b.scrollTop = b.scrollHeight - b.clientHeight;
-        webSocket.send(JSON.stringify({chatType: v.id === 'group' ? 'group' : 'room', sender: {id: user.id, name: user.name}, reciever: {id: v.id, name: v.name}, messageType: 'talk', message: a.value}));
+        webSocket.send(JSON.stringify({chatType: v.id === 'group' ? 'group' : 'room', sender: {id: user.id, name: user.name, bgColor: user.bgColor, color: user.color}, reciever: {id: v.id, name: v.name}, messageType: 'talk', message: a.value}));
         a.value = '';
     }
     modeChange.addEventListener('click', function(){
@@ -254,10 +341,11 @@ function newChatWin(v, setUp) {
             roomStr = v.id === 'group' ? '群聊' : '此包厢';
         triggerConfirm({text: `即将${isRecording ? '删除' + roomStr + '记录并开启无痕模式' : '开启记录模式'}，是否继续？`}, () => {
             webSocket.send(JSON.stringify({chatType: v.id === 'group' ? 'group' : 'room', sender: {id: user.id, name: user.name}, reciever: {id: v.id, name: v.name}, messageType: 'switchRecords', message: !isRecording}));
+            closeConfirm();
         });
     });
     close.addEventListener('click', function(){
-       triggerConfirm({text: `即将遁去，是否继续？`}, () => {
+       triggerConfirm({text: c.id === 'group' ? `即将遁去，是否继续？`: `即将解散包厢“${c.name}”, 是否继续`}, () => {
            /*u.removeChild(liNode);
             m.removeChild(node);
             var l = u.children.length;
@@ -267,7 +355,13 @@ function newChatWin(v, setUp) {
                 c = '';
                 location.reload();
             }*/
-            location.reload();
+            if(c.id === 'group') {
+                location.reload();
+            } else {
+                close.setAttribute('disabled', '');
+                webSocket.send(JSON.stringify({sender: {id: user.id, name: user.name}, reciever: {id: v.id, name: v.name}, messageType: 'closeRoom'}));
+                closeConfirm();
+            }
        });
     });
     var ns = document.createElement("script");
@@ -290,8 +384,13 @@ function addClass(obj, cls) {
 }
 function removeClass(obj, cls) {
     if (hasClass(obj, cls)) {
-        var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
-        obj.className = obj.className.replace(reg, '');
+        var reg = new RegExp('(^|\\s)' + cls + '(\\s|$)', 'g');
+        
+        // 使用正则替换删除类名，确保中间空格不丢失
+        obj.className = obj.className.replace(reg, '$1').trim();
+
+        // 确保只有一个空格
+        obj.className = obj.className.replace(/\s{2,}/g, ' ');
     }
 }
 function hasClass(obj, cls) {
@@ -327,7 +426,7 @@ function checkHistory(contents, node) {
                 return '<div class="time">'+ date +'</div>' + 
                 cts.map(m => {
                     let ms = !!m ? JSON.parse(m) : undefined;
-                    return !!ms ? '<div class="kf"><span><i><img title="'+ms.sender.name+'" src="../img/user.png"/></i><b title="'+ms.sender.name+'">'+ms.sender.name+'</b></span><div><span>'+showSpe(ms.message)+'</span></div></div>' : '';
+                    return !!ms ? '<div class="kf"><span><i style="background:'+ms.sender.bgColor+';color:'+ms.sender.color+'">'+ms.sender.name[0]+'</i><b title="'+ms.sender.name+'">'+ms.sender.name+'</b></span><div><span>'+showSpe(ms.message)+'</span></div></div>' : '';
                 }).join('');
             }).join('');
         dom.innerHTML = str;
@@ -350,23 +449,35 @@ function toggle() {
         removeClass(sumInfo, 'open');
     } else addClass(sumInfo, 'open');
 }
-function confirmCallback(isConfirm, noClose) {
+function triggerClick(event) {
+    let dom = document.getElementById('cornfirmPop');
+    if(event.keyCode == '13' && !dom.hasAttribute('disabled')) confirmCallback(true);
+}
+function confirmCallback(isConfirm) {
     let dom = document.getElementById('cornfirmPop'),
         textDom = document.getElementById('confirmText'),
         customDom = document.getElementById('customBox');
     if(isConfirm) {
         confirmExcution && confirmExcution();
-    }
-    if(dom.hasAttribute('waitting') && isConfirm) {
-        return;
-    } else if(dom.hasAttribute('waitting') && !isConfirm)
-        dom.removeAttribute('waitting');
+    }else closeConfirm();
+}
+function closeConfirm() {
+    let dom = document.getElementById('cornfirmPop'),
+        textDom = document.getElementById('confirmText'),
+        customDom = document.getElementById('customBox'),
+        errorDom = document.getElementById('confirmError');
     textDom.innerText = '';
     customDom.innerHTML = '';
+    errorDom.innerText = '';
     confirmExcution = null;
     removeClass(dom, 'active');
+    dom.removeAttribute('popid');
+    if(dom.hasAttribute('waitting'))
+        dom.removeAttribute('waitting');
+    if(dom.hasAttribute('disabled'))
+        dom.removeAttribute('disabled');
 }
-function triggerConfirm(content, callback) {
+function triggerConfirm(content, callback, beforeCallback) {
     let dom = document.getElementById('cornfirmPop'),
         textDom = document.getElementById('confirmText'),
         customDom = document.getElementById('customBox');
@@ -374,27 +485,106 @@ function triggerConfirm(content, callback) {
     customDom.innerHTML = content.code || '';
     confirmExcution = callback;
     addClass(dom, 'active');
+    dom.setAttribute('popid', guid());
+    beforeCallback && beforeCallback();
 }
 function selectRoom(roomId){
-    let dom = document.getElementById(roomId);
-    removeClass(document.getElementById(c.id), 'active');
-    removeClass(document.getElementById('v'+c.id), 'active');
-    c = rooms.find(r => r.id === roomId);
-    addClass(document.getElementById(c.id), 'active');
-    addClass(document.getElementById('v'+c.id), 'active');
-    removeClass(dom, 'newmsg');
+    let oDom = document.getElementById(c.id),
+        ovDom = document.getElementById('v'+c.id),
+        v = rooms.find(r => r.id === roomId);
+    let cDom = document.getElementById(v.id),
+        cvDom = document.getElementById('v'+v.id);
+    if(cvDom) {
+        if(oDom) removeClass(oDom, 'active');
+        if(ovDom) removeClass(ovDom, 'active');
+        addClass(cDom, 'active');
+        addClass(cvDom, 'active');
+        removeClass(cDom, 'newmsg');
+        c = v;
+        let b = cvDom.getElementsByClassName('box')[0]
+        b.scrollTop = b.scrollHeight - b.clientHeight;
+    } else if(v.question){
+        triggerConfirm({
+            text: `包厢${v.name}问题为“${v.question}”，请写出答案：`, 
+            code: `<div style="margin: 0 0 10px;"><input id="myAnswer" placeholder="答案" style="width:100%;box-sizing:border-box;outline:none;" onkeypress="triggerClick(event)"/></div>`
+        }, () => {
+            let dom = document.getElementById('cornfirmPop'),
+                domAns = document.getElementById('myAnswer'),
+                errorDom = document.getElementById('confirmError');
+            
+            if(domAns.value) {
+                errorDom.innerText = '';
+                dom.setAttribute('waitting', '');
+                dom.setAttribute('disabled', '');
+                webSocket.send(JSON.stringify({sender: {id: user.id, name: user.name}, reciever: {id: v.id, name: v.name}, messageType: 'checkRoom', message: {answer: domAns.value, applyId: dom.getAttribute('popid')}}));
+            }else {
+                errorDom.innerText = '* 所填项不能为空';
+            }
+        });
+    }
 }
 function apply() {
     triggerConfirm({
         text: `请设置包厢名、准入的问题和答案：`, 
-        code: `<div><input id="applyRoomName" placeholder="房间名" style="width:100%;box-sizing:border-box;outline:none;"/></div>
-        <div style="margin-top: 10px;"><input id="applyQuestion" placeholder="问题" style="width:100%;box-sizing:border-box;outline:none;"/></div>
-        <div style="margin: 10px 0;"><input id="applyAnswer" placeholder="答案" style="width:100%;box-sizing:border-box;outline:none;"/></div>`
+        code: `<div><input id="applyRoomName" placeholder="房间名" style="width:100%;box-sizing:border-box;outline:none;" onkeypress="triggerClick(event)"/></div>
+        <div style="margin-top: 10px;"><input id="applyQuestion" placeholder="问题" style="width:100%;box-sizing:border-box;outline:none;" onkeypress="triggerClick(event)"/></div>
+        <div style="margin: 10px 0;"><input id="applyAnswer" placeholder="答案" style="width:100%;box-sizing:border-box;outline:none;" onkeypress="triggerClick(event)"/></div>`
     }, () => {
-        let dom = document.getElementById('cornfirmPop');
-        dom.setAttribute('waitting', '');
+        let dom = document.getElementById('cornfirmPop'),
+            domName = document.getElementById('applyRoomName'),
+            domQue = document.getElementById('applyQuestion'),
+            domAns = document.getElementById('applyAnswer'),
+            errorDom = document.getElementById('confirmError');
         
+        if(domName.value && domQue.value && domAns.value) {
+            errorDom.innerText = '';
+            dom.setAttribute('waitting', '');
+            dom.setAttribute('disabled', '');
+            webSocket.send(JSON.stringify({sender: {id: user.id, name: user.name}, reciever: {name: domName.value}, messageType: 'applyRoom', message: {question: domQue.value, answer: domAns.value, applyId: dom.getAttribute('popid')}}));
+        }else {
+            errorDom.innerText = '* 所填项不能为空';
+        }
     });
+}
+function showTipPop(args) {
+    let dom = document.getElementById('tipPop'),
+        node = document.createElement('span');
+    node.className = args.status;
+    node.innerText = args.text;
+    dom.appendChild(node);
+    setTimeout(() => {
+        dom.removeChild(node);
+    }, 3000);
+}
+function refreshMyRooms(rs) {
+    myRooms = rs;
+    Array.from(u.children).forEach(dom => {
+        if(myRooms.indexOf(dom.id) > -1) {
+            if(!hasClass(dom, 'registered')) addClass(dom, 'registered');
+        } else {
+            if(hasClass(dom, 'registered')) removeClass(dom, 'registered');
+        } 
+    });
+}
+function getRandomRGBColor() {
+    const r = Math.floor(Math.random() * 256); // 红色值 (0-255)
+    const g = Math.floor(Math.random() * 256); // 绿色值 (0-255)
+    const b = Math.floor(Math.random() * 256); // 蓝色值 (0-255)
+    return `rgb(${r}, ${g}, ${b})`;
+}
+function getContrastingColor(backgroundColor) {
+    // 提取 RGB 数值（假设背景色是 RGB 格式）
+    const rgb = backgroundColor.match(/\d+/g);
+
+    if (!rgb) return 'black';  // 如果无法解析颜色，默认返回黑色
+
+    const [r, g, b] = rgb.map(Number);  // 将字符串数组转换为数字
+
+    // 计算亮度：使用加权的亮度公式
+    const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    // 如果亮度大于 128，则返回黑色，否则返回白色
+    return brightness > 128 ? 'black' : 'white';
 }
 m.addEventListener('mousedown', (e) => {
     if(sumInfo.contains(e.target)) return;

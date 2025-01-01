@@ -37,12 +37,23 @@
             <div>
                 <p id="confirmText"></p>
                 <div id="customBox"></div>
-                <div id="confirmBtns">
-                    <span onclick="confirmCallback(false)">取消</span>
-                    <span onclick="confirmCallback(true)">确定</span>
+                <div id="confirmOperators">
+                    <div class="confirmState">
+                        <div class="loading-circle-wrap">
+                            <div class="loading-circle">
+                                <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+                            </div>
+                        </div>
+                        <span id="confirmError"></span>
+                    </div>
+                    <div id="confirmBtns">
+                        <span onclick="confirmCallback(false)">取消</span>
+                        <span onclick="confirmCallback(true)">确定</span>
+                    </div>
                 </div>
             </div>
         </div>
+        <div id="tipPop"></div>
         <div id="pop">
             <p>已掉线，重新加入？</p>
             <a href="javascript:void(0)" onclick="location.reload();">确定</a>

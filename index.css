@@ -8,6 +8,7 @@ body{
     padding: 0;
     margin: 0;
     height: 100%;
+    -webkit-user-select:none;
 }
 #theme{
     position: absolute;
@@ -27,7 +28,6 @@ body{
     transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
     overflow: hidden;
-    -webkit-user-select:none;
     z-index: 1000;
     min-width: 1000px;
 }
@@ -292,7 +292,11 @@ xmp {
     white-space: nowrap;
 }
 .kf>span>i {
-    display: inline-block;
+    display: inline-flex;
+    font-size: 25px;
+    font-style: normal;
+    align-items: center;
+    justify-content: center;
     width: 40px;
     height: 40px;
     margin-right: 20px;
@@ -305,7 +309,11 @@ xmp {
     border-radius: 50%;
 }
 .user>i {
-    display: inline-block;
+    display: inline-flex;
+    font-size: 25px;
+    font-style: normal;
+    align-items: center;
+    justify-content: center;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -313,7 +321,6 @@ xmp {
     background: #73C7FB;
     margin-left: 20px;
     vertical-align: top;
-    line-height: 58px;
     overflow: hidden;
 }
 .user>i>img {
@@ -532,8 +539,10 @@ xmp {
     letter-spacing: 0;
     border-radius: 50% 50% 50% 0;
     position: absolute;
-    margin-top: 6px;
-    margin-left: 2px;
+    top: 50%;
+    transform: translateY(calc(-50% - 10px));
+    -webkit-transform: translateY(calc(-50% - 10px));
+    margin-left: 1px;
     font-size: 10px;
 }
 #nextus{
@@ -551,11 +560,12 @@ xmp {
     font-size: 12px;
 }
 #nextus:after{
-    width: 105%;
-    height: 29px;
-    top: -2px;
-    margin-left: 50%;
-    left: -44px;
+    width: calc(100% + 5px);
+    height: calc(100% + 5px);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
     content: '';
     display: block;
     -webkit-border-radius: 30px;
@@ -574,30 +584,47 @@ xmp {
     background-image: linear-gradient(#2e3537, #424748);
 }
 #userList>div{
-    height: 56px;
+    height: 46px;
     padding: 0 10px 0 46px;
     box-sizing: border-box;
     background:url(img/users.png)no-repeat 20px center;
     background-size: auto 30%;
     font-size: 14px;
     color: #fff;
-    line-height: 56px;
+    line-height: 46px;
     cursor: pointer;
+    position: relative;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#userList > div.newmsg {
+    padding-right: 26px;
+}
+#userList>div + div{
+    box-shadow: inset 0 1px 0 0 rgba(255,255,255,.05);
+}
+#userList>div.registered{
+    box-shadow: inset 4px 0 0 0 rgb(44 220 26);
+}
+#userList>div + div.registered {
+    box-shadow: inset 4px 0 0 0 rgb(44 220 26),
+                inset 0 1px 0 0 rgba(255,255,255,.05);
 }
 #userList>div.active,
 #userList>div:hover{
     background-color: #2f363e;
 }
 #userList>div.newmsg:after{
-    content: '新消息';
-    background: #fff;
-    color: #2f363e;
-    padding: 1px 4px;
-    border-radius: 10px;
-    font-size: 12px;
-    float: right;
-    line-height: initial;
-    margin-top: 18px;
+    content: '';
+    background: #ff6262;
+    height: 6px;
+    width: 6px;
+    border-radius: 50%;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    margin-top: -3px;
 }
 #login>.img{
     text-align: center;
@@ -660,7 +687,10 @@ xmp {
     font-size: 13px;
     z-index: 9999;
 }
-#cornfirmPop {
+#tipPop {
+    position: fixed;
+}
+#cornfirmPop, #tipPop {
     background: none;
     z-index: 9998;
 }
@@ -676,6 +706,56 @@ xmp {
     display: flex;
     flex-direction: column;
 }
+#tipPop > span {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    opacity: 0;
+    transform: translate(-50%, 50%);
+    -webkit-transform: translate(-50%, 50%);
+    animation: showing .3s linear forwards;
+    padding: 10px 10px 10px 30px;
+    background: rgba(0,0,0,.8);
+}
+#tipPop > span.success:before,
+#tipPop > span.warning:before,
+#tipPop > span.error:before {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    margin-top: -8px;
+    display: inline-flex;
+    vertical-align: top;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+}
+#tipPop > span.success {
+    color: #30D130;
+}
+#tipPop > span.success:before {
+    content: '√';
+    color: #30D130;
+    box-shadow: 0 0 0 1px #30D130;
+}
+#tipPop > span.warning {
+    color: rgb(252, 217, 18);
+}
+#tipPop > span.warning:before {
+    content: '！';
+    color: rgb(252, 217, 18);
+    box-shadow: 0 0 0 1px rgb(252, 217, 18);
+}
+#tipPop > span.error {
+    color: rgb(241, 55, 55);
+}
+#tipPop > span.error:before {
+    content: '×';
+    color: rgb(241, 55, 55);
+    box-shadow: 0 0 0 1px rgb(241, 55, 55);
+}
 #confirmText {
     margin-top: 0;
     flex: 1;
@@ -683,10 +763,35 @@ xmp {
     height: 0;
     word-break: break-all;
 }
-#confirmBtns{
+#confirmOperators{
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
 } 
+.confirmState {
+    flex: 1;
+    width: 0;
+    min-width: 0;
+}
+#cornfirmPop .loading-circle-wrap {
+    padding-left: 24px;
+    vertical-align: top;
+    display: none;
+}
+#cornfirmPop[waitting] .loading-circle-wrap{
+    display: inline-block;
+}
+#cornfirmPop[disabled] #confirmBtns > span + span,
+.close[disabled]{
+    opacity: .5;
+    pointer-events: none;
+}
+#confirmError {
+    display: inline-block;
+    vertical-align: top;
+    max-width: 100%;
+    color: red;
+    padding-right: 10px;
+}
 #confirmBtns > span{
     display: inline-block;
     padding: 5px 10px;
@@ -783,6 +888,106 @@ xmp {
 .menu span, .menu::after {
     margin-top: 5px;
 }
+
+.loading-circle-wrap {
+    position: relative;
+    height: 24px;
+}
+
+.loading-circle {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+}
+
+.loading-circle div {
+    transform-origin: 12px 12px;
+    animation: loading 1.2s linear infinite;
+}
+
+.loading-circle div:after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.loading-circle div:nth-child(1) {
+    transform: rotate(0deg);
+    animation-delay: -0.8s;
+}
+
+.loading-circle div:nth-child(2) {
+    transform: rotate(40deg);
+    animation-delay: -0.7s;
+}
+
+.loading-circle div:nth-child(3) {
+    transform: rotate(80deg);
+    animation-delay: -0.6s;
+}
+
+.loading-circle div:nth-child(4) {
+    transform: rotate(120deg);
+    animation-delay: -0.5s;
+}
+
+.loading-circle div:nth-child(5) {
+    transform: rotate(160deg);
+    animation-delay: -0.4s;
+}
+
+.loading-circle div:nth-child(6) {
+    transform: rotate(200deg);
+    animation-delay: -0.3s;
+}
+
+.loading-circle div:nth-child(7) {
+    transform: rotate(240deg);
+    animation-delay: -0.2s;
+}
+
+.loading-circle div:nth-child(8) {
+    transform: rotate(280deg);
+    animation-delay: -0.1s;
+}
+
+.loading-circle div:nth-child(9) {
+    transform: rotate(320deg);
+    animation-delay: 0s;
+}
+
+@keyframes loading {
+    0% {
+        opacity: 1;
+    }
+  
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes showing {
+    9% {
+        opacity: 0;
+        transform: translate(-50%, -100%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+  
 @media screen and (max-width: 1000px), screen and (max-height: 562px) {
     #login, #mwin{
         position: relative;
@@ -852,6 +1057,9 @@ xmp {
         text-overflow: ellipsis;
         font-size: 13px;
     }
+    #userList > div:not(.active):hover {
+        background-color: initial;
+    }
     #nextus::after {
         left: 50%;
         top: 50%;
@@ -893,6 +1101,7 @@ xmp {
         width: 25px;
         border-radius: 4px;
     }
+    .modeChange:not(.active):hover,
     .close:hover {
         background: initial;
         color: #bbb;
