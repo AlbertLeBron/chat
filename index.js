@@ -5,8 +5,10 @@ var logginError = document.getElementById('errorMessage'),
     sumInfo = document.getElementById('sumInfo'),
     nextus = document.getElementById('nextus'), 
     m = document.getElementById('mwin'), 
-    u = document.getElementById('userList'), times = [], c, rooms = [], myRooms = [], url = 'logic.php?', user = {}, webSocket,
+    u = document.getElementById('userList'), 
+    times = [], c, rooms = [], myRooms = [], url = 'logic.php?', user = {}, webSocket,
     confirmExcution,
+    maxSizeInBytes = 100 * 1024,
     tolerance = 1; // 容差值，可以根据需要调整;
 
 function openClient() {
@@ -15,7 +17,7 @@ function openClient() {
         logginError.innerText = '';
         nameSub.setAttribute('disabled', '');
 
-        webSocket = new WebSocket('ws://localhost:8870');  
+        webSocket = new WebSocket('ws://localhost:8870');
 
         webSocket.onerror = function(event) {  
             logginError.innerText = '系统忙碌中，请稍等片刻...';
@@ -138,17 +140,16 @@ function openClient() {
                                 closeConfirm();
                                 if(v) selectRoom(v.id);
                             }
-                            showTipPop({status: 'success', text: `包厢${message.reciever.name}申请成功！`});
+                            showTipPop({status: 'success', text: `包厢“${message.reciever.name}”申请成功`});
                             refreshMyRooms(message.setUp.myRooms);
                         }
                         break;
                 case 'rooms':
                         let orooms = rooms;
                         rooms = message.message;
-                        nus.setAttribute('num', rooms.length);
                         let lostRooms = orooms.filter(or => !rooms.find(r => r.id === or.id));
                         if(lostRooms.length) {
-                            showTipPop({status: 'warning', text: `包厢“${lostRooms.map(lr => lr.name).join('、')}”已解散！`});
+                            showTipPop({status: 'warning', text: `包厢“${lostRooms.map(lr => lr.name).join('、')}”已解散`});
                         }
                         if(lostRooms.find(lr => lr.id === c.id)) {
                             let oDom = document.getElementById('v'+c.id);
@@ -156,7 +157,7 @@ function openClient() {
                             c = orooms.find(or => rooms.find(r => r.id === or.id));
                             document.getElementById(c.id).click();
                         }
-                        u.innerHTML = rooms.map(room => `<div id="${room.id}" class="${room.id === c.id ? 'active' : ''}${myRooms.find(id => id === room.id) ? ' registered' : ''}" onclick="selectRoom('${room.id}')">${room.name}</div>`).join('');
+                        u.innerHTML = rooms.map(room => `<div id="${room.id}" class="${room.id === c.id ? 'active' : ''}${myRooms.find(id => id === room.id) ? ' registered' : ''}" onclick="selectRoom('${room.id}')"><span>${room.name}</span></div>`).join('');
                         break;
                 case 'checkRoom':
                         if(message.message.error) {
@@ -220,7 +221,6 @@ function newRoom(data){
         return;
     }
     rooms = data.setUp.rooms;
-    nus.setAttribute('num', rooms.length);
     myRooms = data.setUp.myRooms;
     refreshMyRooms(myRooms);
     let v = rooms.find(room => room.id === data.roomId);
@@ -230,7 +230,7 @@ function newRoom(data){
     }
     c = v;
 
-    u.innerHTML = rooms.map(room => `<div id="${room.id}" class="${room.id === v.id ? 'active' : ''}${myRooms.find(id => id === room.id) ? ' registered' : ''}" onclick="selectRoom('${room.id}')">${room.name}</div>`).join('');
+    u.innerHTML = rooms.map(room => `<div id="${room.id}" class="${room.id === v.id ? 'active' : ''}${myRooms.find(id => id === room.id) ? ' registered' : ''}" onclick="selectRoom('${room.id}')"><span>${room.name}</span></div>`).join('');
 
     newChatWin(v, {switchRecords: data.setUp.switchRecords}, true);
 }
@@ -244,11 +244,11 @@ function newChatWin(v, setUp, isActive) {
                             <div class="dialogue">
                                 <div class="boxWrap">
                                     <div class="box">
-                                        <div class="words"><div class="historyContent"></div></div>
+                                        <div class="words"><div class="historyContent">${setUp.switchRecords ? '<div class="loader"><div class="loaderInner"><div></div><div></div><div></div></div></div>' : ''}</div></div>
                                         <div class="toBottom">有新消息 &#8675;</div>
                                     </div>
                                 </div>
-                                <div class="quick"><span title="表情包">&#9786</span><div id="emoji">
+                                <div class="quick"><span class="expression"><span title="表情包"><em></em><em></em></span></span><div class="emoji">
                                 <a title="鼓掌"><img src="../img/emo01.gif"/></a>
                                 <a title="偷乐"><img src="../img/emo02.gif"/></a>
                                 <a title="点头"><img src="../img/emo03.gif"/></a>
@@ -258,7 +258,7 @@ function newChatWin(v, setUp, isActive) {
                                 <a title="点赞"><img src="../img/emo07.gif"/></a>
                                 <a title="拜拜"><img src="../img/emo08.gif"/></a>
                                 <a title="送花"><img src="../img/emo09.gif"/></a>
-                                </div></div>
+                                </div><span class="uploadPic"><span>&#x1F5BC;</span><input class="inputPic" type="file" accept="image/*" title="选择图片" /></span></div>
                                 <div class="oper">
                                     <textarea class="ipt" maxlength="2000" contenteditable="true" placeholder="输入您想说的话..."></textarea>
                                     <div class="tool"><small class="warn">空的发不了哦</small><span align="right" class="send">发 送</span></div>
@@ -269,7 +269,8 @@ function newChatWin(v, setUp, isActive) {
 
     var w = node.getElementsByClassName('words')[0], s = node.getElementsByClassName('send')[0], a = node.getElementsByClassName('ipt')[0], 
         b = node.getElementsByClassName('box')[0], warn = node.getElementsByClassName('warn')[0], tb = node.getElementsByClassName('toBottom')[0], 
-        modeChange = node.getElementsByClassName('modeChange')[0], close = node.getElementsByClassName('close')[0], q = node.getElementsByClassName('quick')[0].getElementsByTagName('a');
+        inputPic = node.getElementsByClassName('inputPic')[0], modeChange = node.getElementsByClassName('modeChange')[0], close = node.getElementsByClassName('close')[0], 
+        q = node.getElementsByClassName('quick')[0].getElementsByTagName('a');
 
     var newItem;
     newItem = document.createElement('div');
@@ -303,7 +304,7 @@ function newChatWin(v, setUp, isActive) {
     for(var i = 0;i<9;i++){
         q[i].addEventListener("click", function(){
             var val = a.value;
-            a.value = '&mtwd:0,'+this.children[0].getAttribute('src').split('emo')[1].replace('.gif','');
+            a.value = '&hhwd:0,'+this.children[0].getAttribute('src').split('emo')[1].replace('.gif','');
             send();
             a.value = val;
         });
@@ -336,6 +337,22 @@ function newChatWin(v, setUp, isActive) {
         webSocket.send(JSON.stringify({chatType: v.id === 'group' ? 'group' : 'room', sender: {id: user.id, name: user.name, bgColor: user.bgColor, color: user.color}, reciever: {id: v.id, name: v.name}, messageType: 'talk', message: a.value}));
         a.value = '';
     }
+    inputPic.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                compressBase64Image(e.target.result, maxSizeInBytes, function(compressedImage) {
+                    var val = a.value;
+                    a.value = '&hhwd:1,'+compressedImage;
+                    send();
+                    a.value = val;
+                });
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+    });
     modeChange.addEventListener('click', function(){
         let isRecording = hasClass(modeChange, 'active'),
             roomStr = v.id === 'group' ? '群聊' : '此包厢';
@@ -369,13 +386,23 @@ function newChatWin(v, setUp, isActive) {
     if(setUp.switchRecords) webSocket.send(JSON.stringify({chatType: v.id === 'group' ? 'group' : 'room', sender: {id: user.id, name: user.name}, reciever: {id: v.id, name: v.name}, messageType: 'records'}));
 }
 function showSpe(str){
-    var val = str.split('&mtwd:');
+    let htmlStr = '',
+        val = str.split('&hhwd:');
     if(val.length<2){
-        return '<xmp>'+val[0]+'</xmp>';
+        htmlStr = '<xmp>'+val[0]+'</xmp>';
     }else{
         val = val[1].split(',');
+        switch(val[0]) {
+            case '0': 
+                htmlStr = '<img class="emoj" src="../img/emo'+val[1]+'.gif"/>';
+                break;
+            case '1':
+                let imgStr = val.join(',').replace('1,', '');
+                htmlStr = '<span class="pic" onclick="showLargeImage(\''+imgStr+'\')"><img src="'+imgStr+'"/></span>';
+                break;
+        } 
     }
-    return '<img class="emoj" src="../img/emo'+val[1]+'.gif"/>';
+    return htmlStr;
 }
 function addClass(obj, cls) {
     if (!this.hasClass(obj, cls)) {
@@ -526,7 +553,7 @@ function selectRoom(roomId){
 function apply() {
     triggerConfirm({
         text: `请设置包厢名、准入的问题和答案：`, 
-        code: `<div><input id="applyRoomName" placeholder="房间名" style="width:100%;box-sizing:border-box;outline:none;" onkeypress="triggerClick(event)"/></div>
+        code: `<div><input id="applyRoomName" placeholder="包厢名" style="width:100%;box-sizing:border-box;outline:none;" onkeypress="triggerClick(event)"/></div>
         <div style="margin-top: 10px;"><input id="applyQuestion" placeholder="问题" style="width:100%;box-sizing:border-box;outline:none;" onkeypress="triggerClick(event)"/></div>
         <div style="margin: 10px 0;"><input id="applyAnswer" placeholder="答案" style="width:100%;box-sizing:border-box;outline:none;" onkeypress="triggerClick(event)"/></div>`
     }, () => {
@@ -586,6 +613,67 @@ function getContrastingColor(backgroundColor) {
     // 如果亮度大于 128，则返回黑色，否则返回白色
     return brightness > 128 ? 'black' : 'white';
 }
+function showLargeImage(imgStr) {
+    let imagePop = document.getElementById('imagePop');
+    imagePop.innerHTML = '<img src="'+imgStr+'" /><em onclick="closeImage(event)">×</em>';
+    if(!hasClass(imagePop, 'active'))
+        addClass(imagePop, 'active');
+}
+function closeImage(e) {
+    let imagePop = document.getElementById('imagePop'),
+        img = imagePop.getElementsByTagName('img')[0];
+    if(img && img.contains(e.target)) return;
+    imagePop.innerHTML = '';
+    if(hasClass(imagePop, 'active'))
+        removeClass(imagePop, 'active');
+}
+
+function compressBase64Image(base64, maxSizeInBytes, callback) {
+    let img = new Image();
+    img.src = base64;
+
+    img.onload = function() {
+        let canvas = document.createElement('canvas');
+        let ctx = canvas.getContext('2d');
+
+        let width = img.width;
+        let height = img.height;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        let low = 0.1;
+        let high = 0.9;
+        let quality = high;
+
+        function compress() {
+            canvas.toBlob((blob) => {
+                let reader = new FileReader();
+                reader.onloadend = function() {
+                    let compressedBase64 = reader.result;
+
+                    if (compressedBase64.length > maxSizeInBytes && high - low > 0.01) {
+                        quality = (low + high) / 2;
+                        if (compressedBase64.length > maxSizeInBytes) {
+                            high = quality;
+                        } else {
+                            low = quality;
+                        }
+                        compress();
+                    } else {
+                        callback(compressedBase64);
+                    }
+                };
+                reader.readAsDataURL(blob);
+            }, 'image/jpeg', quality);
+        }
+
+        compress();
+    };
+}
+
 m.addEventListener('mousedown', (e) => {
     if(sumInfo.contains(e.target)) return;
     if(hasClass(sumInfo, 'open')) {

@@ -7,7 +7,8 @@ const HEARTBEAT_INTERVAL = 30000; // 每 10 秒发送一次 ping
 const TIMEOUT = 60000; // 30 秒超时，如果超过这个时间没有 pong，认为连接断开
 
 const folder = 'chatRecords', mainFolder = 'dialogs', configFolder = 'config', filePath = getCurrentDateFolder();
-let server, rooms = {}, queue = [], deleteQueue = [], processing = false, deleteProcessing = false;
+let server, rooms = {}, queue = [], deleteQueue = [], processing = false, deleteProcessing = false,
+    recordsWrittenQueue = [], recordsWrittenProcessing = false;
 
 init();
 
@@ -67,6 +68,7 @@ async function readRecords(recieverId, callback) {
       }
       callback && callback(records);
     } catch (err) {
+      callback && callback({reciever: {id: recieverId}, message: {error: '读取出错'}, contents: []});
       console.error('读取文件时出错:', err);
     }
 }
@@ -124,6 +126,24 @@ async function processDeleteQueue() {
     deleteProcessing = false;
 }
 
+async function processRecordsWrittenQueue() {
+    if (recordsWrittenProcessing) {
+        // 如果已经有任务在处理，则直接返回，避免重复调用
+        return;
+    }
+
+    // 标记为正在处理
+    recordsWrittenProcessing = true;
+
+    while (recordsWrittenQueue.length > 0) {
+        const task = recordsWrittenQueue.shift(); // 从队列中取出任务
+        await task(); // 执行任务
+    }
+
+    // 完成处理，标记为未处理
+    recordsWrittenProcessing = false;
+}
+
 async function init() {
     await deleteRecords(folder);
 
@@ -167,6 +187,8 @@ async function init() {
                         try {
                             room.openRecords = message.message;
                             if(!room.openRecords) {
+                                recordsWrittenQueue = [];
+                                recordsWrittenProcessing  = false;
                                 const dirPath = path.join(folder, mainFolder, message.reciever.id);
                                 deleteRecords(dirPath);
                             }
@@ -178,13 +200,22 @@ async function init() {
                         });
                         break;
                 case 'talk':
-                    server.connections.filter(c => c.userInfomation.rooms.indexOf(message.reciever.id) > -1).forEach(function(connection) {
-                            connection.sendText(str);
-                    });
+                        try {
+                            server.connections.filter(c => c.userInfomation.rooms.indexOf(message.reciever.id) > -1).forEach(function(connection) {
+                                connection.sendText(str);
+                            });
 
-                    room = rooms[message.reciever.id];
-                    if(room && room.openRecords)
-                            writeRecords(message.reciever.id, str);
+                            room = rooms[message.reciever.id];
+                            if(room && room.openRecords) {
+                                recordsWrittenQueue.push(async () => {
+                                    await writeRecords(message.reciever.id, str);
+                                });
+
+                                processRecordsWrittenQueue();
+                            }
+                        } catch(e) {
+                            console.log('talkError', e);   
+                        }
                     break;
                 case 'pong':
                     lastPongTime = Date.now();
@@ -276,6 +307,7 @@ async function init() {
 
 process.on('uncaughtException', async (err, origin) => {
     await deleteRecords(folder);
+    console.log('错误', err, origin);
     // 强制退出进程
     process.exit(1);  // 退出进程，传递非零状态码表示异常退出
 });
@@ -291,4 +323,4 @@ process.on('SIGINT', async () => {
     process.exit(0);
 });
 
-console.log("App listening at port 8870")
+console.log("Socket listening at port 8870")

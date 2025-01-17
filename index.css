@@ -51,7 +51,7 @@ body{
 xmp {
     margin: 0;
     font: inherit;
-    white-space: normal;
+    white-space: pre-wrap;
     word-break: break-all;
     -webkit-user-select: text;
 }           
@@ -76,7 +76,7 @@ xmp {
 .clientloc {
     display: inline-block;
     vertical-align: top;
-    padding-right: 78px;
+    padding-right: 70px;
     font-size: 13px;
     letter-spacing: 0.8px;
     color: #999;
@@ -154,30 +154,73 @@ xmp {
     font-size: 20px;
     color: #777;
 }
-.quick>span{
-    margin-right: 10px;
+.expression{
+    padding: 0 6px 0 2px;
     display: inline-flex;
     align-items: center;
     height: 35px;
 }
-#emoji{
+.expression>span{
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    height: 22px;
+    width: 22px;
+    box-shadow: 0 0 0 1px #aaa;
+    border-radius: 50%;
+}
+.expression>span>em {
+    position: absolute;
+    display: inline-block;
+    vertical-align: top;
+    height: 3px;
+    width: 3px;
+    top: 6px;
+    border-radius: 50%;
+    background: #777;
+}
+.expression>span:after {
+    content: '';
+    position: absolute;
+    display: inline-block;
+    vertical-align: top;
+    height: 5px;
+    width: 10px;
+    bottom: 3px;
+    border-radius: 0 0 5px 5px;
+    box-shadow: 0 0 0 1px #aaa;
+    left: 50%;
+    margin-left: -5px;
+}
+.expression>span>em:first-child {
+    left: 5px;
+}
+.expression>span>em:last-child {
+    right: 5px;
+}
+.emoji{
     flex: 1;
     display: flex;
     flex-wrap: wrap;
 }
-#emoji>a{
+.emoji>a{
     display:inline-block;
-    text-align: center;
     vertical-align: middle;
     cursor: pointer;
     height:35px;
-    width: 35px;
+    width: 33px;
+    position: relative;
 }
-#emoji>a:hover,#wuppic:hover{
+.emoji>a:hover,#wuppic:hover{
     background: #ccc;
 }
-#emoji>a>img{
-    margin-top: 15%;
+.emoji>a>img{
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
     width: 70%;
 }
 #wuppic>img{
@@ -255,24 +298,49 @@ xmp {
     font-family: inherit;               
 }
 .send{
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 70px;
     height: 30px;
-    line-height: 30px;
     border-radius: 2px;
     font-size: 13px;
     color: #fff;
     background: #28A7F6;
-    text-align: center;
     cursor: pointer; 
 }
 .send:hover{
     background: #67C5FF;
 }
+.uploadPic {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    vertical-align: top;
+    width: 35px;
+    position: relative;
+    overflow: hidden;
+    font-size: 16px;
+}
+.uploadPic:hover {
+    background: #ccc;
+}
+.uploadPic > input {
+    position: absolute;
+    opacity: 0;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+}
 .tool{
     text-align: right;
     padding: 0 10px;
     position: relative;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 }
 .kf, .user{
     margin: 20px 0 23px;
@@ -293,7 +361,7 @@ xmp {
 }
 .kf>span>i {
     display: inline-flex;
-    font-size: 25px;
+    font-size: 22px;
     font-style: normal;
     align-items: center;
     justify-content: center;
@@ -393,6 +461,18 @@ xmp {
     top: 10px;
     right: -8px;
 }
+.pic {
+    display: flex;
+    height: 100px;
+    max-width: 100%;
+    background: rgba(0,0,0,.8);
+    align-items: center;
+    justify-content: center;
+}
+.pic img{
+    max-width: 100%;
+    max-height: 100%;
+}
 .time{
     text-align: center;
     border-radius: 20px;
@@ -431,7 +511,7 @@ xmp {
     background: url(warn.png)no-repeat center center;
     background-size: 100% auto;
     top:-100px;
-    right: 60px;
+    right: 50px;
     height: 110px;
     color: red;
     width: 100px;
@@ -526,25 +606,6 @@ xmp {
     text-align: center;
     position: relative;
 }
-#nus:after{
-    content: attr(num);
-    min-width: 17px;
-    height: 17px;
-    display: inline-block;
-    text-shadow: initial;               
-    line-height: 17px;
-    color: red;
-    background: #fff;
-    font-family: initial;
-    letter-spacing: 0;
-    border-radius: 50% 50% 50% 0;
-    position: absolute;
-    top: 50%;
-    transform: translateY(calc(-50% - 10px));
-    -webkit-transform: translateY(calc(-50% - 10px));
-    margin-left: 1px;
-    font-size: 10px;
-}
 #nextus{
     display: inline-block;
     padding: 4px 0;
@@ -585,15 +646,18 @@ xmp {
 }
 #userList>div{
     height: 46px;
-    padding: 0 10px 0 46px;
+    padding: 0 10px 0 40px;
     box-sizing: border-box;
     background:url(img/users.png)no-repeat 20px center;
     background-size: auto 30%;
     font-size: 14px;
     color: #fff;
-    line-height: 46px;
     cursor: pointer;
     position: relative;
+    display: flex;
+    align-items: center;
+}
+#userList>div>span{
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -605,10 +669,10 @@ xmp {
     box-shadow: inset 0 1px 0 0 rgba(255,255,255,.05);
 }
 #userList>div.registered{
-    box-shadow: inset 4px 0 0 0 rgb(44 220 26);
+    box-shadow: inset 4px 0 0 0 #4cae4c;
 }
 #userList>div + div.registered {
-    box-shadow: inset 4px 0 0 0 rgb(44 220 26),
+    box-shadow: inset 4px 0 0 0 #4cae4c,
                 inset 0 1px 0 0 rgba(255,255,255,.05);
 }
 #userList>div.active,
@@ -673,7 +737,7 @@ xmp {
 #login a:hover:not([disabled]) {
     background: #24b024;
 }
-#cornfirmPop, #pop {
+#imagePop, #cornfirmPop, #tipPop, #pop {
     position: fixed;
     height: 100%;
     width: 100%;
@@ -688,7 +752,35 @@ xmp {
     z-index: 9999;
 }
 #tipPop {
+    display: flex;
+    pointer-events: none;
     position: fixed;
+    flex-direction: initial;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+#imagePop {
+    background: rgba(0,0,0,.8);
+    z-index: 9998;
+}
+#imagePop > img {
+    max-height: 100%;
+    max-width: 100%;
+}
+#imagePop > em {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .6);
+    color: rgba(255, 255, 255, .6);
+    right: 10px;
+    top: 10px;
+    font-size: 20px;
+    font-style: initial;
 }
 #cornfirmPop, #tipPop {
     background: none;
@@ -707,15 +799,13 @@ xmp {
     flex-direction: column;
 }
 #tipPop > span {
-    position: fixed;
-    left: 50%;
-    top: 50%;
     opacity: 0;
-    transform: translate(-50%, 50%);
-    -webkit-transform: translate(-50%, 50%);
+    transform: translateY(50%);
+    -webkit-transform: translateY(50%);
     animation: showing .3s linear forwards;
-    padding: 10px 10px 10px 30px;
+    padding: 10px 10px 10px 28px;
     background: rgba(0,0,0,.8);
+    border-radius: 4px;
 }
 #tipPop > span.success:before,
 #tipPop > span.warning:before,
@@ -723,20 +813,21 @@ xmp {
     position: absolute;
     left: 10px;
     top: 50%;
-    margin-top: -8px;
+    margin-top: -6px;
     display: inline-flex;
     vertical-align: top;
-    height: 16px;
-    width: 16px;
+    height: 12px;
+    width: 12px;
     border-radius: 50%;
     justify-content: center;
     align-items: center;
+    font-size: 12px;
 }
 #tipPop > span.success {
     color: #30D130;
 }
 #tipPop > span.success:before {
-    content: '√';
+    content: '✔';
     color: #30D130;
     box-shadow: 0 0 0 1px #30D130;
 }
@@ -744,17 +835,17 @@ xmp {
     color: rgb(252, 217, 18);
 }
 #tipPop > span.warning:before {
-    content: '！';
+    content: '!';
     color: rgb(252, 217, 18);
     box-shadow: 0 0 0 1px rgb(252, 217, 18);
 }
 #tipPop > span.error {
-    color: rgb(241, 55, 55);
+    color: rgb(247, 81, 81);
 }
 #tipPop > span.error:before {
     content: '×';
-    color: rgb(241, 55, 55);
-    box-shadow: 0 0 0 1px rgb(241, 55, 55);
+    color: rgb(247, 81, 81);
+    box-shadow: 0 0 0 1px rgb(247, 81, 81);
 }
 #confirmText {
     margin-top: 0;
@@ -812,7 +903,7 @@ xmp {
 #confirmBtns > span + span:hover {
     background: #0d56b6;
 }
-#cornfirmPop.active, #pop.active {
+#imagePop.active, #cornfirmPop.active, #pop.active {
     display: flex;
 }
 .menuWrap{
@@ -966,6 +1057,57 @@ xmp {
     animation-delay: 0s;
 }
 
+.loaderInner {
+    text-align: center;
+    padding: 10px 0 0;
+}
+
+.loaderInner > div {
+    background: rgba(0, 0, 0, .3);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin: 2px;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+    display: inline-block;
+}
+
+.loaderInner > div:nth-child(1) {
+    -webkit-animation: ball-grid-pulse 0.75s 0.12s infinite cubic-bezier(.2, .68, .18, 1.08);
+    animation: ball-grid-pulse 0.75s 0.12s infinite cubic-bezier(.2, .68, .18, 1.08);
+}
+
+.loaderInner > div:nth-child(2) {
+    -webkit-animation: ball-grid-pulse 0.75s 0.24s infinite cubic-bezier(.2, .68, .18, 1.08);
+    animation: ball-grid-pulse 0.75s 0.24s infinite cubic-bezier(.2, .68, .18, 1.08);
+}
+
+.loaderInner > div:nth-child(3) {
+    -webkit-animation: ball-grid-pulse 0.75s 0.36s infinite cubic-bezier(.2, .68, .18, 1.08);
+    animation: ball-grid-pulse 0.75s 0.36s infinite cubic-bezier(.2, .68, .18, 1.08);
+}
+
+@keyframes ball-grid-pulse{
+    0% {
+      -webkit-transform: scale(1);
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    50% {
+      -webkit-transform: scale(0.5);
+      transform: scale(0.5);
+      opacity: 0.7;
+    }
+
+    100% {
+      -webkit-transform: scale(1);
+      transform: scale(1);
+      opacity: 1;
+    }
+}
+
 @keyframes loading {
     0% {
         opacity: 1;
@@ -979,12 +1121,12 @@ xmp {
 @keyframes showing {
     9% {
         opacity: 0;
-        transform: translate(-50%, -100%);
+        transform: translateY(-100%);
     }
 
     100% {
         opacity: 1;
-        transform: translate(-50%, -50%);
+        transform: translateY(-50%);
     }
 }
   
@@ -1040,32 +1182,25 @@ xmp {
         position: absolute;
         bottom: 0;
         line-height: initial;
-        padding: 15px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
     #userList {
         padding-bottom: 60px;
         background-color: rgba(54, 62, 71, .9);
     }
     #userList > div {
-        display: flex;
-        align-items: center;
         height: 35px;
-        line-height: initial;
         padding-left: 35px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
         font-size: 13px;
     }
     #userList > div:not(.active):hover {
         background-color: initial;
     }
-    #nextus::after {
-        left: 50%;
-        top: 50%;
-        margin-left: initial;
-        transform: translate(-50%, -50%);
-        -webkit-transform: translate(-50%, -50%);
+    #nextus {
+        cursor: default;
     }
     #nus::after {
         margin-top: 0;
@@ -1135,6 +1270,12 @@ xmp {
     .ipt{
         height: 50px;
         box-shadow: 0 0 1px 0 rgb(0, 0, 0);
+    }
+    .warn {
+        right: 40px;
+    }
+    .uploadPic {
+        font-size: 12px;
     }
     .menuWrap {
         display: block;
