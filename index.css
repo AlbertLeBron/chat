@@ -33,6 +33,7 @@ body{
 }
 #mwin {
     display: flex;
+    height: 562px;
 }
 #login {
     height: 300px;
@@ -111,12 +112,14 @@ xmp {
 .dialogue{
     width: 760px;
     height: 100%;
-    display: inline-block;
-    vertical-align: top;
+    display: flex;
+    flex-direction: column;
 }
 .boxWrap {
-    height: 315px;
     position: relative;
+    flex: 1;
+    height: 0;
+    min-height: 0;
 }
 .box{
     height: 100%;              
@@ -548,6 +551,11 @@ xmp {
 .userInfo.active{
     display: inline-flex;
     flex-direction: column;
+}
+.content {
+    flex: 1;
+    height: 0;
+    min-height: 0;
 }
 #me{
     height: 90px;
@@ -1156,6 +1164,7 @@ xmp {
         -webkit-transition: all .2s;
         transform: translateX(-100%);
         -webkit-transform: translateX(-100%);
+        background: rgba(54, 62, 71, .9);
     }
     #sumInfo.open {
         transform: translateX(0);
@@ -1188,8 +1197,8 @@ xmp {
         justify-content: center;
     }
     #userList {
-        padding-bottom: 60px;
-        background-color: rgba(54, 62, 71, .9);
+        margin-bottom: 60px;
+        background: none;
     }
     #userList > div {
         height: 35px;
@@ -1252,11 +1261,6 @@ xmp {
     }
     .dialogue {
         width: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    .boxWrap {
-        flex: 1;
     }
     .oper{
         height: initial;
